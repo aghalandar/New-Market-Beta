@@ -5,7 +5,7 @@ Empirical research has shown that the Capital Asset Pricing Model (CAPM) does no
 
 ## What is this measure?
 
-1) it uses daily stock returns instead of monthly returns as inputs. (We need 250 daily stock return) 
+1) it uses daily stock returns instead of monthly returns as inputs. (The analysis is based on 5 years of observation; we need at least 250 daily stock return) 
 2) Employs a smooth exponential aging process for past returns, accounting for the time-varying and mean-reverting nature of true betas
 3) it removes outliers in daily stock return. (Welch propose to winsorize daily stock return by delat of 3 around market return. For instance, if daily market retrun is 5%, the range for daily stock return is (1 ± 3): (-2, 4) of market return or -10% and 20%. )
 
