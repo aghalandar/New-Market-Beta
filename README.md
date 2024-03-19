@@ -1,4 +1,4 @@
-# Calculating New Market Beta proposed by Welch (2019)
+# New Market Beta proposed by Welch (2019)
 [Welch (2019)](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3371240) introduces a novel method for calculating Market Beta that outperforms traditional estimators in predicting future OLS market-beta.
 
 Empirical research has shown that the Capital Asset Pricing Model (CAPM) does not hold, making it challenging to predict future returns using market Beta reliably. However, Market Beta is still valuable for investors who want to hedge against market risk factors. The Welch Method outperforms other measures in calculating the Market Beta. 
@@ -12,8 +12,18 @@ Empirical research has shown that the Capital Asset Pricing Model (CAPM) does no
 ## Download the data: 
 We need historical daily returns to calculate the measure. I use the data from CRSP on WRDS. This data can be downloaded directly from WRDS or using Python. In the code [download_data](https://github.com/aghalandar/New-Market-Beta/blob/8cf9237f13b62c18f4a66222f34ef6bbbf835c20/download_data.ipynb), I use WRDS connection to download the CRSP data. Alternatively, other databases with similar data can be used to achieve comparable results.
 
-## Code: 
-<pre><code class="language-python">
+## Code:
+This Python function welch_beta calculates Welch betas for a specified range of years and months
+Parameters:
+year_start (int): The starting year for the calculation (default: 2023).
+year_finish (int): The ending year for the calculation (default: 2023).
+rw_mon (int): The number of months to consider for each calculation (default: 60).
+rho (float): The decay factor for age decay calculation (default: 2/252).
+delta (int): The delta value for winsorizing the excess return (default: 3).
+
+Replace the default parameters with your desired values or leave them unchanged to use the defaults. Make sure to have the required datasets (history_data.csv and ff.csv) available in the specified file paths. Once executed, the function returns a DataFrame with the calculated Welch betas.
+
+```python
 import pandas as pd
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
@@ -71,11 +81,13 @@ def welch_beta(year_start=2023, year_finish=2023, rw_mon=60, rho=2/252, delta=3)
             _dset1 = _dset1.drop(['exrlo', 'exrhi', 'n', 'RF'], axis=1)
 
             # Calculate welch betas
-            model = _dset1.groupby('permno').apply(lambda x: WLS(x['exretwins'], x['Mkt-RF'], weights=x['agew']).fit().params['Mkt-RF'], include_groups=False)
+            model = _dset1.groupby('permno').apply(lambda x: WLS(x['exretwins'], x['Mkt-RF'], \
+                                    weights=x['agew']).fit().params['Mkt-RF'], include_groups=False)
             model_df1 = pd.DataFrame({'permno': model.index, 'mdate': mdate, 'bMkt_welch': model.values})
 
             # Calculate old market betas for comparison: no winsorize, not weight
-            model2 = _dset1.groupby('permno').apply(lambda x: OLS(x['exret'], x['Mkt-RF']).fit().params['Mkt-RF'], include_groups=False)
+            model2 = _dset1.groupby('permno').apply(lambda x: OLS(x['exret'], \
+                                    x['Mkt-RF']).fit().params['Mkt-RF'], include_groups=False)
             model_df2 = pd.DataFrame({'permno': model2.index, 'mdate': mdate, 'bMkt': model2.values})
 
             merged_df = pd.merge(model_df1, model_df2, on=['permno', 'mdate'])
@@ -83,5 +95,4 @@ def welch_beta(year_start=2023, year_finish=2023, rw_mon=60, rho=2/252, delta=3)
             result = pd.concat([result, merged_df], ignore_index=True)
 
     return result
-</code></pre>
-
+                                        
